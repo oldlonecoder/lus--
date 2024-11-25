@@ -301,7 +301,7 @@ struct  LUS_API event
 private:
 
 
-    static void shutdown_listeners();
+//    static void shutdown_listeners();
 
     /*!
         \brief The conio_parser class interpret input sequence(s) from stdin.
@@ -314,41 +314,41 @@ private:
         I mean that I learned to program GUI on linux using Trolltech Qt.
         Particularly for the UTF8 parser, and the mouse report, I owe him a hug and a big thanks for sharing his work.
      */
-    struct ansi_parser
-    {
-        std::string_view _seq_;
-        std::string_view::iterator it{};
-
-        enum class type :u8 {
-            // Copyright 2020 Arthur Sonzogni. All rights reserved.
-            // https://github.com/ArthurSonzogni/FTXUI
-            UNCOMPLETED,
-            DROP,
-            CHARACTER,
-            MOUSE,
-            CURSOR_POSITION,
-            CURSOR_SHAPE,
-            SPECIAL,
-            // ---------------------------------------------------
-        }parse_type{ansi_parser::type::UNCOMPLETED};
-        bool next_byte();
-        //u8 current();
-
-        ansi_parser() = default;
-        ~ansi_parser();
-        // Inspired from https://github.com/ArthurSonzogni/FTXUI
-        // [ terminal_input_parser.hpp/cpp ]
-        event::type parse(event&, const char*);
-        event::type parse_utf8(event&);
-        event::type parse_esc(event& evd);
-        event::type parse_dcs();
-        event::type parse_csi(event &evd);
-        event::type parse_ss_1_2(event& evd);
-        event::type parse_osc(event& ev);
-        event::type parse_mouse(event& _ed, bool _altered, bool _pressed, std::vector<int> _args);
-        event::type parse_caret_report(std::vector<int> _args);
-
-    };
+    // struct ansi_parser
+    // {
+    //     std::string_view _seq_;
+    //     std::string_view::iterator it{};
+    //
+    //     enum class type :u8 {
+    //         // Copyright 2020 Arthur Sonzogni. All rights reserved.
+    //         // https://github.com/ArthurSonzogni/FTXUI
+    //         UNCOMPLETED,
+    //         DROP,
+    //         CHARACTER,
+    //         MOUSE,
+    //         CURSOR_POSITION,
+    //         CURSOR_SHAPE,
+    //         SPECIAL,
+    //         // ---------------------------------------------------
+    //     }parse_type{ansi_parser::type::UNCOMPLETED};
+    //     bool next_byte();
+    //     //u8 current();
+    //
+    //     ansi_parser() = default;
+    //     ~ansi_parser();
+    //     // Inspired from https://github.com/ArthurSonzogni/FTXUI
+    //     // [ terminal_input_parser.hpp/cpp ]
+    //     // event::type parse(event&, const char*);
+    //     // event::type parse_utf8(event&);
+    //     // event::type parse_esc(event& evd);
+    //     // event::type parse_dcs();
+    //     // event::type parse_csi(event &evd);
+    //     // event::type parse_ss_1_2(event& evd);
+    //     // event::type parse_osc(event& ev);
+    //     // event::type parse_mouse(event& _ed, bool _altered, bool _pressed, std::vector<int> _args);
+    //     // event::type parse_caret_report(std::vector<int> _args);
+    //
+    // };
 };
 
 
