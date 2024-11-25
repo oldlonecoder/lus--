@@ -29,12 +29,24 @@ namespace lus::ui::io
 
 class LUS_API ansi_parser
 {
-    descriptor _data_{};
+
 public:
     ansi_parser() = default;
     ~ansi_parser() = default;
 
-    explicit ansi_parser(const descriptor& _data);
+    explicit ansi_parser(descriptor& _stream);
+    log::code parse(event& ev);
+
+private:
+
+    log::code parse_ESC(event& ev);
+    log::code parse_csi(event& ev);
+    log::code parse_mouse(event& ev, std::vector<int>&& args);
+    log::code parse_ss1_2(event& ev);
+    descriptor& stream;
+
+    bool next_byte();
+    std::string::iterator cursor{};
     //...
     
 };

@@ -364,7 +364,7 @@ event::type event::ansi_parser::parse(event &_ev_, const char *a_seq_)
 {
     //log::log() << log::fn::fun;
     _seq_ = a_seq_; ///@todo handle MSVC craps that forbid "const char*" to be used to construct their string_view !!!
-    //log::debug() << log::fn::fun << "{" << color::yellow << tuxin::string::bytes(_seq_) << color::reset << "}:";
+    //log::debug() << log::fn::fun << "{" << color::yellow << lus::string::bytes(_seq_) << color::reset << "}:";
     it = _seq_.begin();
 
     // L'on s'occupe des CSI (Control Sequence Introducer) avant tout:
