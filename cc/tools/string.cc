@@ -23,7 +23,7 @@
 
 #include <lus++/tools/string.h>
 //#include "lus++/journal/book.h"
-
+#include <lus++/tools/logger.h>
 #define out std::cout
 #define lend std::endl;
 
@@ -269,6 +269,7 @@ std::string string::now(const std::string& str_fmt)
 std::string string::bytes(std::string_view a_seq)
 {
     std::string outstr{};
+
     int c = 0;
     for(auto ch  : a_seq)
     {

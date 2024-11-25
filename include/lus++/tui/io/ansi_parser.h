@@ -20,14 +20,23 @@
 #pragma once
 
 #include <lus++/tui/events.h>
+#include <lus++/tui/io/polling.h>
 
 namespace lus::ui::io
 {
+
+
+
 class LUS_API ansi_parser
 {
+    descriptor _data_{};
+public:
+    ansi_parser() = default;
+    ~ansi_parser() = default;
 
-
-
+    explicit ansi_parser(const descriptor& _data);
+    //...
+    
 };
 
 

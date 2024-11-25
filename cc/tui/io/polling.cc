@@ -27,12 +27,84 @@ namespace lus::ui::io
 
 #pragma region _descriptor_
 
+/*!
+ * @brief discard the signal - slot on copy
+ */
+descriptor::descriptor(const descriptor& d)
+{
+    _config_ = d._config_;
+    _buffer_ = d._buffer_;
+    _config_.poll_bits = 0;
+    _config_.cursor = _buffer_.begin() + (d._config_.cursor - _buffer_.begin());
+    _config_.fd = -1;
+    _config_.max_length  = _buffer_.length();
+    _in  = {};
+    _out = {};
+}
+
+descriptor& descriptor::operator=(const descriptor& d)
+{
+    _config_ = d._config_;
+    _buffer_ = d._buffer_;
+    _config_.poll_bits = 0;
+    _config_.cursor = _buffer_.begin() + (d._config_.cursor - _buffer_.begin());
+    _config_.fd = -1;
+    _config_.max_length  = _buffer_.length();
+    _in  = {};
+    _out = {};
+    return *this;
+}
+
 
 
 descriptor& descriptor::set_poll_bits(u16 _bits)
 {
     _config_.poll_bits = _bits;
     return *this;
+}
+
+
+bool descriptor::operator++()
+{
+    if (_config_.cursor >= _buffer_.end())
+    {
+        _config_.cursor  = _buffer_.end();
+        return false;
+    }
+    return _config_.cursor != _buffer_.end();
+}
+
+
+bool descriptor::operator++(int)
+{
+    if (_config_.cursor >= _buffer_.end())
+    {
+        _config_.cursor  = _buffer_.end();
+        return false;
+    }
+    return _config_.cursor != _buffer_.end();
+}
+
+
+bool descriptor::operator--()
+{
+    if (_config_.cursor == _buffer_.end())
+    {
+        _config_.cursor  = _buffer_.end();
+        return false;
+    }
+    return _config_.cursor >= _buffer_.begin();
+}
+
+
+bool descriptor::operator--(int)
+{
+    if (_config_.cursor == _buffer_.end())
+    {
+        _config_.cursor  = _buffer_.end();
+        return false;
+    }
+    return _config_.cursor >= _buffer_.begin();
 }
 
 
@@ -44,6 +116,7 @@ log::action descriptor::poll_in()
 {
     _buffer_.clear();
     u64 count = 0;
+    char buffer[1024] = {0};
     ioctl(_config_.fd,FIONREAD, &count);
     if(!count)
     {
@@ -53,13 +126,16 @@ log::action descriptor::poll_in()
     }
     log::message() << " triggered descriptor handle #" << color::yellow << _config_.fd << color::reset << ": ioctl to read reports:" << color::lightsteelblue3 << count << log::eol;
     _buffer_.reserve(count);
-    if(auto bytes = ::read(_config_.fd,_buffer_.data(), count); bytes != count)
+    size_t bytes = ::read(_config_.fd,buffer, count);
+    if(bytes != count)
     {
-        // discard and flush - ignore unreliable sequence.
-        log::error() << "poll_in read error: {" << color::lightsteelblue3 << lus::string::bytes(_buffer_) << log::eol;
+        log::error() << "poll_in read error: {" << color::lightsteelblue3 << lus::string::bytes(buffer) << log::eol;
         _buffer_.clear();
         return log::action::leave;
     }
+
+    _buffer_ = buffer;
+    log::debug() << "poll_in read bytes: " << bytes << " / buffer.length() : " << _buffer_.length() << ": -> {" << lus::string::bytes(_buffer_) << "}" <<  log::eol;
     if(!_in.empty())
         return _in(*this);
 

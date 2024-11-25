@@ -26,6 +26,7 @@ namespace lus
 {
 log::action tddv::std_input(ui::io::descriptor& _d)
 {
+    log::debug() << "tddv::std_input{" << lus::string::bytes(_d.buffer()) << "}" << log::eol;
     ui::event ev{};
     //parsers_pool.enqueu(ev);
     return log::action::end;

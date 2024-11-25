@@ -58,22 +58,31 @@ public:
         u16         poll_bits{0};
         size_t      max_length{0};
         int         fd{-1};
+        std::string::iterator cursor{};
     };
 
     descriptor()=default;
+    descriptor(const descriptor&);
     descriptor(descriptor&& )noexcept =default;
 
     ~descriptor() = default;
 
     descriptor& operator =(descriptor&& )noexcept =default;
+    descriptor& operator =(const descriptor& );
     descriptor& set_poll_bits(u16 _bits);
 
+    std::string buffer() { return  _buffer_; }
+    std::string::iterator begin() { return _buffer_.begin(); }
+    std::string::iterator end() { return _buffer_.end(); }
+    std::string::iterator& cursor() { return _config_.cursor; }
+
+    bool operator ++();
+    bool operator ++(int);
+    bool operator --();
+    bool operator --(int);
 
     config_data& config(){ return _config_; }
-    void activate()
-    {
-        _flags_.active = 1;
-    }
+    void activate() { _flags_.active = 1; }
     lus::signals::action<lus::ui::io::descriptor&>& pollin_action() { return _in; }
     lus::signals::action<lus::ui::io::descriptor&>& pollout_action() { return _out; }
 private:
@@ -81,6 +90,7 @@ private:
     log::action poll_out();
     descriptor::config_data _config_;
 };
+
 
 
 /*!
