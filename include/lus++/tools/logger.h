@@ -133,6 +133,7 @@ public:
         begin            , ///< Begin (sel)Section or augment indent level
         end              , ///< End   Loop/Action or End selection or Unindent one level; or end inputs on the current logentry then flush to file.
         continu          , ///< Continue Loop or continue Signals::Action iteration.
+        dismiss          , ///< The current action or iteration has been dismissed : break loop or actual action.
     };
 
 

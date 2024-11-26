@@ -142,11 +142,13 @@ log::action descriptor::poll_in()
         //@todo Loop until all bytes in the buffer are eaten. - Implement circular buffer in case if 1024 bytes isn't enough...Or discard remaining unhandled bytes as extraneous.
         while (loop_count < 10)
         {
-            if (auto a = _in(*this); a!=log::action::continu)
+            if (auto a = _in(*this); a==log::action::leave || a==log::action::end)
             {
                 //...
+                log::status() << a << " on the " << loop_count << "'th iteration." << log::eol;
                 return a;
             }
+            ++loop_count;
         }
     }
 

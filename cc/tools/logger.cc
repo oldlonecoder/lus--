@@ -115,7 +115,7 @@ std::map<log::action, const char*> actions_dictionary= {
     {log::action::end,     "end"},
     {log::action::commit,  "commit"},
     {log::action::continu, "continue"},
-
+    {log::action::dismiss, "dismissed"},
 };
 
 
@@ -169,6 +169,7 @@ std::map<log::action      , std::pair<glyph::type, color::pair>> actions_color_d
     {log::action::end     , {glyph::dead_head    , {color::white               , color::reset}}},
     {log::action::commit  , {glyph::pencil_dr    , {color::white               , color::reset}}},
     {log::action::continu , {glyph::success      , {color::white               , color::reset}}},
+       {log::action::dismiss , {glyph::arrow_dhead_right , {color::yellow         , color::reset}}},
 };
 
 std::map<log::code, std::pair<glyph::type, color::pair>> codes_database={
