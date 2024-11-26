@@ -138,8 +138,16 @@ log::action descriptor::poll_in()
     log::debug() << "poll_in read bytes: " << bytes << " / buffer.length() : " << _buffer_.length() << ": -> {" << lus::string::bytes(_buffer_) << "}" <<  log::eol;
     if(!_in.empty())
     {
+        int loop_count = 0;
         //@todo Loop until all bytes in the buffer are eaten. - Implement circular buffer in case if 1024 bytes isn't enough...Or discard remaining unhandled bytes as extraneous.
-        return _in(*this);
+        while (loop_count < 10)
+        {
+            if (auto a = _in(*this); a!=log::action::continu)
+            {
+                //...
+                return a;
+            }
+        }
     }
 
     // Handled or not, we clear the buffer here before returning for the next event.
