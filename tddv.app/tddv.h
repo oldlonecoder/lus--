@@ -41,7 +41,7 @@ class tddv : public ui::application
     ui::io::polling _polling{"std_inputs"};
 
 
-    log::action std_input(ui::io::descriptor& _d);
+    log::action std_input_triggered(ui::io::descriptor& _d);
 
 
 public:

@@ -31,6 +31,11 @@ using namespace ::integers;
 class polling;
 
 
+/*!
+ * @brief descriptor class for the polling io
+ *
+ * @note As of 2024/11/29, _buffer_ type attr must be change to raw char array.
+ */
 class LUS_API descriptor final
 {
     CLASSNAME_(descriptor)
@@ -52,11 +57,11 @@ public:
     using shared = std::shared_ptr<descriptor>; ///< fire and forget :) yep! I am being lazy-corrupted! hehehe
     using list= std::vector<descriptor::shared>;
 
-
+    void init();
     struct config_data
     {
         u16         poll_bits{0};
-        size_t      max_length{0};
+        size_t      max_length{1024};
         int         fd{-1};
         std::string::iterator cursor{};
     };
@@ -65,7 +70,7 @@ public:
     descriptor(const descriptor&);
     descriptor(descriptor&& )noexcept =default;
 
-    ~descriptor() = default;
+    ~descriptor();
 
     descriptor& operator =(descriptor&& )noexcept =default;
     descriptor& operator =(const descriptor& );

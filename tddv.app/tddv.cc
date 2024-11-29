@@ -4,6 +4,8 @@
 
 #include "tddv.h"
 
+#include "lus++/tui/io/ansi_parser.h"
+
 /******************************************************************************************
  *   Copyright (C) 1965/1987/2023 by Serge Lussier                                        *
  *   serge.lussier@oldlonecoder.club                                                      *
@@ -24,11 +26,33 @@
 
 namespace lus
 {
-log::action tddv::std_input(ui::io::descriptor& _d)
+/*!
+ * std inputs triggered this Receiver then pass the descritor's ref to the ainsi parser.
+ * @param _d
+ * @return action: continu, end, leave...- IDK yet...
+ *
+ * @note : To me-self : DO NOT RUN as long as this note is there.
+ * &Agrave; moi-m&ecirc;me: Ne pas ex&eacute;cuter tant que cette note est ici pr&eacute;sente!
+ * Je ne fais ici que jetter des id&eacute;es sur la logistique concernant l'interpretation des input events et une boucle pour la propagation de ces events...
+ * I am only throwing ideas about logistical events interpreting and propagations.
+ */
+log::action tddv::std_input_triggered(ui::io::descriptor& _d)
 {
     log::debug() << "tddv::std_input{" << lus::string::bytes(_d.buffer()) << "}" << log::eol;
     ui::event ev{};
-    //parsers_pool.enqueu(ev);
+   // while (1)
+    //{
+        if(auto r = ui::io::ansi_parser{_d}.parse(ev); r == log::code::ready);
+    //     {
+    //         switch(r)
+    //         {
+    //             case log::code::ready:
+    //                 return log::action::commit;
+    //             //...
+    //             default: break;
+    //         }
+    //     }
+    // }
     return log::action::end;
 }
 
@@ -57,8 +81,9 @@ log::code tddv::tddv_setup()
         .fd = STDIN_FILENO
     };
     auto d = _polling.descriptors().back();
+    d->init();
     log::debug() << "link descriptor handle [" << d->config().fd << "] to tddv::std_input() delegate/slot/handler..." << log::eol;
-    d->pollin_action().connect(this, &tddv::std_input);
+    d->pollin_action().connect(this, &tddv::std_input_triggered);
     d->activate();
 
     return setup_ui();

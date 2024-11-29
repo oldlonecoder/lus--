@@ -27,6 +27,13 @@ namespace lus::ui::io
 
 #pragma region _descriptor_
 
+void descriptor::init()
+{
+    _buffer_ = std::string(_config_.max_length,'\0');
+    _config_.cursor = _buffer_.begin();
+}
+
+
 /*!
  * @brief discard the signal - slot on copy
  */
@@ -37,10 +44,18 @@ descriptor::descriptor(const descriptor& d)
     _config_.poll_bits = 0;
     _config_.cursor = _buffer_.begin() + (d._config_.cursor - _buffer_.begin());
     _config_.fd = -1;
-    _config_.max_length  = _buffer_.length();
+    _config_.max_length  = d._config_.max_length;
     _in  = {};
     _out = {};
+    _buffer_= std::string(d._config_.max_length,' ');
 }
+
+
+descriptor::~descriptor()
+{
+    _buffer_.clear(); // Really needed? Is the _buffer_ 's destructor isn't clearing its own allocated heap ?
+}
+
 
 descriptor& descriptor::operator=(const descriptor& d)
 {
@@ -49,9 +64,10 @@ descriptor& descriptor::operator=(const descriptor& d)
     _config_.poll_bits = 0;
     _config_.cursor = _buffer_.begin() + (d._config_.cursor - _buffer_.begin());
     _config_.fd = -1;
-    _config_.max_length  = _buffer_.length();
+    _config_.max_length  = d._config_.max_length;
     _in  = {};
     _out = {};
+    _buffer_= std::string(d._config_.max_length,' ');
     return *this;
 }
 
@@ -111,6 +127,8 @@ bool descriptor::operator--(int)
 /*!
  * @brief private called from polling class when have activity on this descriptor
  * @return log::action::continu or log::action::leave.
+ *
+ * @note descriptor::_buffer_ is not circular ...yet. It is a one-shot-reset on every calls
  */
 log::action descriptor::poll_in()
 {
@@ -124,17 +142,17 @@ log::action descriptor::poll_in()
         log::message() << " triggering descriptor on zero-byte signal..." << log::eol;
         return log::action::end;
     }
-    log::message() << " triggered descriptor handle #" << color::yellow << _config_.fd << color::reset << ": ioctl to read reports:" << color::lightsteelblue3 << count << log::eol;
-    _buffer_.reserve(count);
-    size_t bytes = ::read(_config_.fd,buffer, count);
+    log::message() << " triggered descriptor handle #" << color::yellow << _config_.fd << color::reset << ": ioctl FIONREAD reports:" << color::lightsteelblue3 << count << log::eol;
+    //_buffer_.reserve(count);
+    size_t bytes = ::read(_config_.fd,&(*_config_.cursor), count);
     if(bytes != count)
     {
-        log::error() << "poll_in read error: {" << color::lightsteelblue3 << lus::string::bytes(buffer) << log::eol;
+        log::error() << "poll_in read error: {" << color::lightsteelblue3 << lus::string::bytes(_buffer_) << log::eol;
         _buffer_.clear();
         return log::action::leave;
     }
 
-    _buffer_ = buffer;
+    //_buffer_ = buffer;
     log::debug() << "poll_in read bytes: " << bytes << " / buffer.length() : " << _buffer_.length() << ": -> {" << lus::string::bytes(_buffer_) << "}" <<  log::eol;
     if(!_in.empty())
     {
