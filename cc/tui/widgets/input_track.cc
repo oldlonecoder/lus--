@@ -79,6 +79,7 @@ log::action intrack::update_event_data(const event& e)
     << color::orangered1 << std::format("{:<3d}",e.data.mev.dxy.y)
     << color::reset << "]";
     dirty(_geometry_.tolocal());
+    log::debug() << pretty_id() << " ---- " << log::eol;
     return log::action::continu;;
 }
 

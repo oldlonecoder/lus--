@@ -40,20 +40,22 @@ log::action tddv::std_input_triggered(ui::io::descriptor& _d)
 {
     log::debug() << "tddv::std_input{" << lus::string::bytes(_d.buffer()) << "}" << log::eol;
     ui::event ev{};
-   // while (1)
-    //{
-        if(auto r = ui::io::ansi_parser{_d}.parse(ev); r == log::code::ready);
-    //     {
-    //         switch(r)
-    //         {
-    //             case log::code::ready:
-    //                 return log::action::commit;
-    //             //...
-    //             default: break;
-    //         }
-    //     }
-    // }
-    return log::action::end;
+    auto r = ui::io::ansi_parser{_d}.parse(ev);
+    log::debug() << " ansi_parser returned " << r << log::eol;
+    if (ev[ui::event::command_key])
+    {
+        log::debug() << " ansi_parser key command" << log::eol;
+        if (ev.data.kev.code == ui::key_event::ESC) return log::action::end;
+    }
+    log::debug() << " screen stuff:" << log::eol;
+    // application::screen()->statusbar()->input_stats()->update_event_data(ev);
+    // application::screen()->statusbar()->update();
+    _intrack->update_event_data(ev);
+    _test_widget_->update();
+        // tests:
+    application::screen()->update();
+    _d.reset();
+    return log::action::continu;
 }
 
 
@@ -173,16 +175,8 @@ log::code tddv::run()
         ui::event ev{};
         auto c = log::code::ok;
 
+        // Main thread events loop.
         _polling.start_polling();
-
-    //     while(ui::event::get_stdin_event(ev,{65000,0})  != log::code::cancel)
-    //     {
-    //         //application::screen()->statusbar()->input_stats()->update_event_data(ev);
-    //         //application::screen()->statusbar()->update();
-    //         _intrack->update_event_data(ev);
-    //         // tests:
-    //         application::screen()->update();
-    //     }
     }
     catch(log::exception& e)
     {

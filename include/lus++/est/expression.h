@@ -39,8 +39,11 @@ public:
 
     expr& operator=(std::string_view expr_text);
 
-    alu exec(std::string_view _text_="");
+    alu       exec(std::string_view _text_="");
     log::code clear();
+    const char* source_code() override;
+
+
 private:
     log::code compile();
     log::code lex();

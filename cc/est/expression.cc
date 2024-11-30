@@ -172,4 +172,8 @@ log::code expr::clear()
     _token_table_.production_table().clear(); // duh...
     return log::code::accepted;
 }
-} // est
+
+
+const char* expr::source_code() { return _src_.data(); }
+
+} // namespace lus::est

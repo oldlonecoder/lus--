@@ -36,6 +36,13 @@ void descriptor::init()
 }
 
 
+void descriptor::reset()
+{
+    std::fill(_buffer_.begin(),_buffer_.end(),'\0');
+    _config_.cursor = _buffer_.begin();
+}
+
+
 /*!
  * @brief discard the signal - slot on copy
  */
@@ -89,6 +96,7 @@ bool descriptor::operator++()
         _config_.cursor  = _buffer_.end();
         return false;
     }
+    ++_config_.cursor;
     return _config_.cursor != _buffer_.end();
 }
 
@@ -100,6 +108,7 @@ bool descriptor::operator++(int)
         _config_.cursor  = _buffer_.end();
         return false;
     }
+    ++_config_.cursor;
     return _config_.cursor != _buffer_.end();
 }
 
@@ -111,6 +120,7 @@ bool descriptor::operator--()
         _config_.cursor  = _buffer_.end();
         return false;
     }
+    --_config_.cursor;
     return _config_.cursor >= _buffer_.begin();
 }
 
@@ -122,6 +132,7 @@ bool descriptor::operator--(int)
         _config_.cursor  = _buffer_.end();
         return false;
     }
+    --_config_.cursor;
     return _config_.cursor >= _buffer_.begin();
 }
 
@@ -146,7 +157,7 @@ log::action descriptor::poll_in()
     }
     log::message() << " triggered descriptor handle #" << color::yellow << _config_.fd << color::reset << ": ioctl FIONREAD reports:" << color::lightsteelblue3 << count << log::eol;
     //_buffer_.reserve(count);
-    size_t bytes = ::read(_config_.fd,&(*_config_.cursor), count);
+    size_t bytes = ::read(_config_.fd, buffer, count);
     if(bytes != count)
     {
         log::error() << "poll_in read error: {" << color::lightsteelblue3 << lus::string::bytes(_buffer_) << log::eol;
@@ -154,27 +165,28 @@ log::action descriptor::poll_in()
         return log::action::leave;
     }
 
-    //_buffer_ = buffer;
+    _buffer_ = buffer;
     log::debug() << "poll_in read bytes: " << bytes << " / buffer.length() : " << _buffer_.length() << ": -> {" << lus::string::bytes(_buffer_) << "}" <<  log::eol;
     if(!_in.empty())
     {
-        int loop_count = 0;
+        return _in(*this);
+        //int loop_count = 0;
         //@todo Loop until all bytes in the buffer are eaten. - Implement circular buffer in case if 1024 bytes isn't enough...Or discard remaining unhandled bytes as extraneous.
-        while (loop_count < 10)
-        {
-            if (auto a = _in(*this); a==log::action::leave || a==log::action::end)
-            {
-                //...
-                log::status() << a << " on the " << loop_count << "'th iteration." << log::eol;
-                return a;
-            }
-            ++loop_count;
-        }
+        // while (loop_count < 10)
+        // {
+        //     if (auto a = _in(*this); a==log::action::leave || a==log::action::end)
+        //     {
+        //         //...
+        //         log::status() << a << " on the " << loop_count << "'th iteration." << log::eol;
+        //         return a;
+        //     }
+        //     ++loop_count;
+        // }
     }
 
     // Handled or not, we clear the buffer here before returning for the next event.
     _buffer_.clear();
-    return log::action::leave;
+    return log::action::continu;
 }
 
 
@@ -281,7 +293,7 @@ log::code polling::run()
         log::debug() << " poll returned: " << r << log::eol;
         if(r == -1)
         {
-            log::error() << "poll() failed:" << std::strerror(errno) << log::eol;
+            log::error() << "poll() :'" << color::red4 <<  std::strerror(errno) << color::reset << '\'' << log::eol;
             _state_ = state::Terminate;
             continue;
             // @todo Signal the error... doh!
@@ -319,6 +331,7 @@ log::code polling::run()
         }
         // Write is not yet needed.
     }
+    log::debug() << " polling loop done, state=" << static_cast<int>(_state_) << log::eol;
     return log::code::done;
 }
 

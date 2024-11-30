@@ -67,7 +67,7 @@ public:
         int         fd{-1};
         std::string::iterator cursor{};
     };
-
+    void reset();
     descriptor()=default;
     descriptor(const descriptor&);
     descriptor(descriptor&& )noexcept =default;

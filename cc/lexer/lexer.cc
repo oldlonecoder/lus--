@@ -8,27 +8,24 @@ namespace lus
 {
 
 
-
 log::code lexer::exec()
 {
-    log::debug() << " Verify config data:";
+    log::debug() << " Verify config data:" << log::eol;
     if(!m_config.production)
     {
-        log::error() << " config data is empty!";
+        log::error() << " config data is empty!" << log::eol;
         return log::code::null_ptr;
     }
-
-
-
-    log::debug() << " Now Building the Tokens Reference Table:";
+    
+    log::debug() << " Now Building the Tokens Reference Table:" << log::eol;
     m_config.production->set_reference_table();
     if(m_config.text.empty() || m_config.production->reference_table().empty())
     {
-        log::error() << " config data is empty!";
+        log::error() << " config data is empty!" << log::eol;
         return log::code::empty;
     }
 
-    log::debug() << " Here is the ref_table Table Dump:" ;
+    log::debug() << " Here is the ref_table Table Dump:"  << log::eol;
     m_config.production->dump_reference_table();
 
     //return log::code::Ok;
@@ -47,18 +44,18 @@ log::code lexer::exec()
  */
 log::code lexer::loop()
 {
-    log::debug() << "Before entering the loop: ";
-    log::write() << " scanner position set at (col:" << scanner()-scanner.begin() << "):{" << scanner.mark() << log::fn::endl << "}";
-    log::test() << " now entering in the loop:";
+    log::debug() << "Before entering the loop: " << log::eol;
+    log::write() << " scanner position set at (col:" << scanner()-scanner.begin() << "):{" << scanner.mark() << log::fn::endl << "}" << log::eol;
+    log::test() << " now entering in the loop:" << log::eol;
     //return log::code::Ok;
     auto Cursor = scanner(); // Save current position.
     while(!scanner.eof() && (state != log::code::eof))
     {
-        log::debug() << " lexer::loop [Next Token]: " << scanner.mark();
+        log::debug() << " lexer::loop [Next Token]: " << scanner.mark() << log::eol;
         lex_token Token{};
         if(!tokenize(m_config.production->scan(scanner())))
         {
-            log::debug() << log::fn::func << " token not in table: " << scanner.mark();
+            log::debug() << log::fn::func << " token not in table: " << scanner.mark() << log::eol;
             if(!!tokenize_numeric(Token))
             {
                 if(scanner.eof() || (state == log::code::eof))
@@ -68,7 +65,7 @@ log::code lexer::loop()
 
         if(Cursor == scanner())
         {
-            log::error() << " loop: no scanning (unhandled yet or bug ;) )" << log::fn::endl << scanner.mark();
+            log::error() << " loop: no scanning (unhandled yet or bug ;) )" << log::fn::endl << scanner.mark() << log::eol;
             return log::code::rejected;
         }
 
@@ -113,7 +110,7 @@ log::code lexer::tokenize(lex_token Token)
 
 log::code lexer::tokenize_binary_operator(lex_token &newtoken)
 {
-    log::debug() << newtoken.details() << scanner.mark();
+    log::debug() << newtoken.details() << scanner.mark() << log::eol;
     (void)tokenize_sign_prefix(newtoken);
     newtoken.token_location = scanner.sync();
     scanner.step(static_cast<int32_t>(newtoken.token_location.length));
@@ -124,9 +121,9 @@ log::code lexer::tokenize_binary_operator(lex_token &newtoken)
 
 log::code lexer::tokenize_default(lex_token &newtoken)
 {
-    log::debug() << " entering with:" << (newtoken ? newtoken.details() : scanner.mark());
+    log::debug() << " entering with:" << (newtoken ? newtoken.details() : scanner.mark()) << log::eol;
 
-    log::debug() << " test scannumber:";
+    log::debug() << " test scannumber:" << log::eol;
     // auto r = scanner.scannumber();
     // if(!!r.first)
     // {
@@ -158,20 +155,20 @@ log::code lexer::tokenize_unary_operator(lex_token &newtoken)
 {
     newtoken.token_location = scanner.sync();
     state = scanner.step(static_cast<int32_t>(newtoken.token_location.length));
-    log::debug() << newtoken.details();
+    log::debug() << newtoken.details() << log::eol;
     push_token(newtoken);
-    log::debug() << "pushed: " << newtoken.details();
+    log::debug() << "pushed: " << newtoken.details() << log::eol;
     return log::code::accepted;
 }
 
 log::code lexer::tokenize_punctuation(lex_token &newtoken)
 {
-    log::debug() << log::fn::func << " sync'ing the scanner:";
+    log::debug() << log::fn::func << " sync'ing the scanner:" << log::eol;
     newtoken.token_location = scanner.sync();
     //newtoken.token_location.begin = scanner();
     //newtoken.token_location.end = newtoken.token_location.begin + newtoken.token_location.length-1;
     //newtoken.name    = newtoken.token_location();
-    log::debug() << "pushing new [punctuation] token";
+    log::debug() << "pushing new [punctuation] token" << log::eol;
     state = scanner.step(static_cast<int32_t>(newtoken.token_location.length));
     push_token(newtoken);
     log::debug() << "pushed: " << log::fn::func << newtoken.details();
@@ -279,7 +276,7 @@ log::code lexer::tokenize_prefix(lex_token &newtoken)
                 newtoken.m  = lex::mnemonic::Factorial;
         }
         if(!production().back().flags.V)
-            throw log::syntax() << newtoken.details() << ": illegal;";
+            throw log::exception()[ log::syntax() << newtoken.details() << ": illegal; "];
     }
     push_token(newtoken);
     
@@ -293,7 +290,7 @@ log::code lexer::tokenize_postfix(lex_token &newtoken)
 {
 
     if((production().empty()) || (!production().back().flags.V))
-        throw log::syntax() << newtoken.details() << ": Illegal;";
+        throw log::exception()[ log::syntax() << newtoken.details() << ": illegal;"];
 
     push_token(newtoken);
     
@@ -342,7 +339,7 @@ log::code lexer::tokenize_numeric(lex_token& newtoken)
  */
 void lexer::push_token(lex_token &newtoken)
 {
-    log::debug() << " Pushing newtoken : " << log::fn::endl  << newtoken.details();
+    log::debug() << " Pushing newtoken : " << log::fn::endl  << newtoken.details() << log::eol;
 
     (*m_config.production) << newtoken;
     
@@ -360,8 +357,6 @@ void lexer::update_token_location(lex_token &newtoken)
 {
 
 }
-
-
 
 
 } // lex

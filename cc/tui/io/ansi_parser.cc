@@ -20,16 +20,16 @@ log::code ansi_parser::parse(event& ev)
 {
     cursor = stream.config().cursor;
     if (cursor == stream.end()) return log::code::eof;
-
+    log::debug() << "parsinf sequence: {" << color::lightsteelblue3 <<  lus::string::bytes(stream.buffer()) << color::reset << '}' << log::eol;
     if (*cursor == 0x1b)
     {
         if (stream.buffer().length()>1) return parse_ESC(ev);
-
+        log::debug() << "escape character pressed: " << log::eol;
         ev.event_bits = event::cancel|event::command_key;
         ev.data.kev.code = key_event::enums::ESC;
         ev.data.kev.ansi_seq[0]=27;
         ev.data.kev.ansi_seq[1]=0;
-        ++stream;
+
         return log::code::ready;
     }
     //---------------------------------------------------------------
@@ -47,12 +47,12 @@ log::code ansi_parser::parse(event& ev)
         if(key_event tmpkev = key_event::query(*cursor); tmpkev.mnemonic != key_event::None)
         {
             ev.data.kev=tmpkev;
-            ++stream;
+            next_byte();
             return log::code::ready;
         }
         ev.event_type = event::type::CHARACTER;
         ev.data.kev.code = static_cast<u64>(static_cast<unsigned char>(*cursor));
-        ++stream;
+        next_byte();
         return log::code::ready;
     }
     return log::code::rejected;
@@ -61,23 +61,20 @@ log::code ansi_parser::parse(event& ev)
 
 log::code ansi_parser::parse_ESC(event& ev)
 {
-    auto c = stream.config().cursor;
-    if (c == stream.end()) return log::code::eof;
     // next character:
+    next_byte();
+    log::debug() << " next byte: " << static_cast<int>(*cursor) << log::eol;
+    if (cursor == stream.end()) return log::code::eof;
 
-    if (c == stream.end()) return log::code::eof;
-
-    // Now determine the vty ansi data struct:
-
-    //log::log() << log::fn::fun;
-
-    switch (*c)
+    switch (*cursor)
     {
         case 'P':
+            log::debug() <<  static_cast<int>(*cursor) << log::code::notimplemented << log::eol;
             return log::code::notimplemented;// parse_dcs();
         case '[':
             return parse_csi(ev); ///@note Le focus est ici [ clefs de commandes et autres ], mouse...
         case ']':
+            log::debug() <<  static_cast<int>(*cursor) << log::code::notimplemented << log::eol;
             return log::code::notimplemented;//parse_osc(evd);
 
         // Expecting 2 characters.
@@ -93,6 +90,7 @@ log::code ansi_parser::parse_ESC(event& ev)
             if (!next_byte())
             {
                 ev.event_type = event::type::UNCOMPLETED;
+                log::debug() <<  static_cast<int>(*cursor) <<  log::code::notimplemented << log::eol;
                 return log::code::notimplemented;
             }
             return parse_ss1_2(ev);
@@ -100,6 +98,7 @@ log::code ansi_parser::parse_ESC(event& ev)
         // Expecting 1 character:
         default:
             ev.event_type = event::type::SPECIAL;
+            log::debug() <<  static_cast<int>(*cursor) << log::code::notimplemented << log::eol;
             return log::code::notimplemented;
         break;
     }
@@ -128,14 +127,14 @@ log::code ansi_parser::parse_csi(event& ev)
         }
 
         if (*cursor >= '0' && *cursor <= '9') {
-            //log::write() << "cursor on digit: '" << color::yellow << (*cursor-'0') << color::reset << "'";
+           // log::write() << "cursor on digit: '" << color::yellow << (*cursor-'0') << color::reset << "'" << log::eol;
             argument *= 10;  // NOLINT
             argument += *cursor - '0';
             continue;
         }
 
         if (*cursor == ';') {
-            //log::write() << "arg separator: arg value: '" << color::yellow << argument << color::reset << "' ";
+            log::write() << "arg separator: arg value: '" << color::yellow << argument << color::reset << "' " << log::eol;
             arguments.push_back(argument);
             argument = 0;
             continue;

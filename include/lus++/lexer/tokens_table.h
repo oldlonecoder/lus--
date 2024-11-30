@@ -29,13 +29,18 @@ protected:
     lex_token::list ref_table;
     lex_token::list prod_table;
     friend class lexer;
-    std::string m_name{"Default Common token_table"};
+    std::string    _name_{"Default Common token_table"};
+
+
 
 public:
 
+    using mnemonic_colours = std::map<lus::lex::mnemonic::T, color::code>;
+    using type_colours = std::map<lus::lex::type::T, color::code>;
+
     token_table()= default;
 
-    ~token_table();
+    virtual ~token_table();
 
     lex_token scan( const char* C);
 
@@ -49,8 +54,10 @@ public:
     void                            dump_production_table();
     lex_token const&                get(std::string_view);
     lex_token const&                get(lex::mnemonic::T);
-    std::string&                    name() { return m_name; }
+    std::string&                    name() { return _name_; }
 protected:
+    static mnemonic_colours _static_mnemonic_colours_table_;
+    static type_colours _static_type_colours_table_;
 //    static size_t AddMnemonicsComponentFromThisTable(const lex_token::Array & Table);
 //    static size_t AddMnemonicComponent(std::string_view Lexeme, Mnemonic::T Num);
 };

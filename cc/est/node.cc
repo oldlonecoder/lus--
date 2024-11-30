@@ -3,7 +3,7 @@
 //
 
 #include <lus++/est/node.h>
-
+#include <lus++/est/expression.h>
 /******************************************************************************************
  *   Copyright (C) ...,2024,... by Serge Lussier                                          *
  *   serge.lussier@oldlonecoder.club                                                      *
@@ -184,7 +184,7 @@ node::node(lus::object* a_parent_scope, lex_token* a_token, alu* _a): lus::objec
                 _op_fn_ = node::s_operator_table.find(a_token->m)->second;
 
                 if(!_op_fn_)
-                    throw log::exception() [ log::fatal() << _token_->mark() << log::fn::endl << "as no implementation!" ];
+                    throw log::exception() [ log::fatal() << _token_->mark(parent<bloc>()->source_code(), false) << log::fn::endl << "as no implementation!" ];
                 return;
             }
             if (_token_->sem & lex::type::Const)
@@ -246,13 +246,13 @@ alu node::JSR()
             if (_op_fn_)
                 return (this->*_op_fn_)();// All operators assign _a_.
             else
-                log::warning() << log::fn::func << "operator node [" << color::yellow << _token_->text() << color::reset << "] has no implementation (yet?).:\n" << _token_->mark() << log::eol;
+                log::warning() << log::fn::func << "operator node [" << color::yellow << _token_->text() << color::reset << "] has no implementation (yet?).:\n" << _token_->mark(parent<bloc>()->source_code(), false) << log::eol;
         }
         else
         {
             if(_op_fn_)
             {
-                log::debug() << log::fn::func << " Non operator call: " <<  _token_->mark()  << log::eol;
+                log::debug() << log::fn::func << " Non operator call: " <<  _token_->mark(parent<bloc>()->source_code(), false)  << log::eol;
                 return (this->*_op_fn_)();
             }
 
@@ -819,12 +819,12 @@ node::input_table_t node::input_tbl =
 
 void node::syntax_error(node* e)
 {
-    throw log::exception() [log::syntax() << "at " << e->_token_->token_location() << log::fn::endl << e->_token_->mark()] ;
+    throw log::exception() [log::syntax() << "at " << e->_token_->token_location() << log::fn::endl << e->_token_->mark(e->parent<bloc>()->source_code(), false)] ;
 }
 
 void node::warning(node* x)
 {
-    log::warning() << "at " << x->_token_->token_location() << log::fn::endl << x->_token_->mark();
+    log::warning() << "at " << x->_token_->token_location() << log::fn::endl << x->_token_->mark(x->parent<bloc>()->source_code(), false);
 }
 
 
@@ -872,11 +872,11 @@ node* node::tree_input(node* parent_bloc, lex_token* token, node::maker mk)
                     << log::type::syntax << ": invalid relational operands at "
                     << token->token_location()
                     << " - unexpected Token:" <<  token->details() << log::fn::endl
-                    << token->mark() << log::fn::endl
+                    << token->mark(parent<bloc>()->source_code(), false) << log::fn::endl
                     << " Should ends expression syntax tree (est) construct.";
                 return nullptr;
             }
-            log::write() << _token_->text() << " -> tree_input(" << token->text() << "):" << log::fn::endl << token->mark();
+            log::write() << _token_->text() << " -> tree_input(" << token->text() << "):" << log::fn::endl << token->mark(parent<bloc>()->source_code(), false);
             return (this->*fn)(a);
         }
     }
@@ -884,7 +884,7 @@ node* node::tree_input(node* parent_bloc, lex_token* token, node::maker mk)
     log::info() << color::white << "'" << color::yellow << _token_->text() << color::white << "'" << color::reset
                     << "::tree_input(" << color::yellow << token->text() << color::reset << ") => invalid relational operands at "
                     << token->token_location() << " - unexpected token."
-                    << log::fn::endl << token->mark() << log::fn::endl ;
+                    << log::fn::endl << token->mark(parent<bloc>()->source_code(), false) << log::fn::endl ;
     log::write() << _token_->details() << " || " << token->details() << log::fn::endl << "Returning nullptr" ;
     return nullptr;
 }
@@ -932,7 +932,7 @@ void node::make_error(log::code ErrCode, node* source_node, node* input_node)
         << ErrCode
         << input_node->attribute()
         << log::fn::endl
-        << input_node->_token_->mark()
+        << input_node->_token_->mark(input_node->parent<bloc>()->source_code(), false)
     ];
 }
 
@@ -944,7 +944,7 @@ void node::header(node* input_node, std::source_location&& Loc) const
     << color::lightsteelblue << " <== "
     << color::yellow << input_node->_token_->type_name()
     << color::grey100 << "[" << color::blueviolet << input_node->_token_->text() << color::grey100 << "]"
-    << log::fn::endl << input_node->_token_->mark();
+    << log::fn::endl << input_node->_token_->mark(input_node->parent<bloc>()->source_code(), false);
 
 }
 
@@ -961,7 +961,7 @@ node* node::close_pair(node* a)
     {
         throw log::exception()
         [
-            log::except() << log::type::syntax << "Unmatched left parenthesis:" << log::fn::endl << a->_token_->mark()
+            log::except() << log::type::syntax << "Unmatched left parenthesis:" << log::fn::endl << a->_token_->mark(parent<bloc>()->source_code(), false)
         ];
         return nullptr;
     }
@@ -981,7 +981,7 @@ node* node::close_pair(node* a)
         << a->_token_->text()
         << color::reset
         << "]" << log::fn::endl
-        << a->_token_->mark();
+        << a->_token_->mark(parent<bloc>()->source_code(), false);
 
     return a;
 }
@@ -1093,7 +1093,7 @@ node* node::close_tree()
     if (!node::s_pars.empty())
     {
         const node* x = node::pop_par();
-        log::error() << " umatched closing parenthese from:" << log::fn::endl << x->_token_->mark();
+        log::error() << " umatched closing parenthese from:" << log::fn::endl << x->_token_->mark(parent<bloc>()->source_code(), false);
         return nullptr;
     }
 
@@ -1103,7 +1103,7 @@ node* node::close_tree()
         if (_l_)
         {
             node* x = _l_;
-            log::debug() << log::fn::func << "left hand side operand: " << _l_->_token_->details() << ":" << log::fn::endl << _l_->_token_->mark();
+            log::debug() << log::fn::func << "left hand side operand: " << _l_->_token_->details() << ":" << log::fn::endl << _l_->_token_->mark(parent<bloc>()->source_code(), false);
 
             _l_->_op_ = _op_;
 
@@ -1123,7 +1123,7 @@ node* node::close_tree()
 node* node::tree_root(const bool skip_syntax)
 {
     header(this, std::source_location::current());
-    //log::debug() << log::fn::fun << "Match tree ins from node node:" << log::fn::endl << _token_->Mark() << log::fn::endl ;
+    //log::debug() << log::fn::fun << "Match tree ins from node node:" << log::fn::endl << _token_->mark(parent<bloc>()->source_code(), false) << log::fn::endl ;
     auto* x = this;
     node* p = x;
     do {
@@ -1135,25 +1135,25 @@ node* node::tree_root(const bool skip_syntax)
             case lex::type::Binary:
                 if (!x->_l_)
                 {
-                    log::error() << "Syntax error: binary operator has no left operand." << log::fn::endl << x->_token_->mark();
+                    log::error() << "Syntax error: binary operator has no left operand." << log::fn::endl << x->_token_->mark(parent<bloc>()->source_code(), false);
                     return nullptr;
                 }
                 if (!x->_r_)
                 {
-                    log::error() << "Syntax error: binary operator has no right operand." << log::fn::endl << x->_token_->mark();
+                    log::error() << "Syntax error: binary operator has no right operand." << log::fn::endl << x->_token_->mark(parent<bloc>()->source_code(), false);
                     return nullptr;
                 }
             case lex::type::Prefix:
                 if (!x->_r_)
                 {
-                    log::error() << "Syntax error: prefix unary operator has no (right) operand." << log::fn::endl << x->_token_->mark();
+                    log::error() << "Syntax error: prefix unary operator has no (right) operand." << log::fn::endl << x->_token_->mark(parent<bloc>()->source_code(), false);
                     return nullptr;
                 }
                 break;
             case lex::type::Postfix:
                 if (!x->_l_)
                 {
-                    log::error() << "Syntax error: postfix unary operator has no (left) operand." << log::fn::endl << x->_token_->mark();
+                    log::error() << "Syntax error: postfix unary operator has no (left) operand." << log::fn::endl << x->_token_->mark(parent<bloc>()->source_code(), false);
                     return nullptr;
                 }
                 break;

@@ -2,7 +2,7 @@
 // Created by oldlonecoder on 24-01-27.
 //
 
-#include <lus++/lexer/token_data.h>
+#include <lus++/lexer/tokens_table.h>
 #include <lus++/tools/sscan.h>
 #include <lus++/tools/geometry.h>
 #include <format>
@@ -12,6 +12,7 @@ static std::string_view NullMsg { "No String" };
 
 namespace lus
 {
+
 
 
 
@@ -30,12 +31,27 @@ std::map<lus::sscan::numeric::details::size_type, lex::type::T> nummap =
     {lus::sscan::numeric::details::size_type::F128, lex::type::F128}
 };
 
+
+/*!
+ * @brief get the text of this token.
+ * @return string_view content.
+ *
+ * @note [JetBrains CLion: warning from clang inspection: "The address of the local variable 'sv' may escape the function" ]
+ *       - 1 : I build that string_view from instance's private member data that lives the life of the token.
+ *       - 2 : std::string_view is supposed to be exactly a representation of the non-copied char array, not a (new) copy of that array.
+ *       - 3 : std::string_view IS MEANT to quit ( copy itself ) the scope for presenting and (rdonly) accessing the inner char array it represents!
+ *       - 4 : I return "a new (stack) copy" of std::string_view!
+ *       - 5 : That is a huge and annoying nonsense...
+ *       - 6 : For now, that inspection is disabled.
+ *
+ */
 std::string_view lex_token::location_data::operator()()
 {
     if(!begin) return NullMsg;
-    log::debug() << " length: " << length;
+    log::debug() << " length: " << length << log::eol;
     if(!end)
     {
+        // In case of that token is a reference token, taken from the reference table, the end pointer is set to nullptr.
         std::string_view sv(begin);
         length = sv.length();
         return sv;
@@ -92,22 +108,25 @@ std::string lex_token::details(bool Frame) const
 }
 
 
-std::string lex_token::mark(bool a_colorize) const
+std::string lex_token::mark(const char* src, bool a_colorize) const
 {
     // 1 - Locate Beginning of the line:
-    lus::string Str;
-    // auto LBegin = token_location.begin;
-    // auto LEnd   = token_location.end;
-    // // Beginning of the line:
-    // while((LBegin > token_location.begin) && (*LBegin != '\n') && (*LBegin != '\r')) --LBegin;
-    // if(LBegin < token_location.begin) LBegin = token_location.begin;
-    // // m_end of line:
-    // while((LEnd < token_location.end) && (*LEnd != '\n') && (*LEnd != '\r')) ++LEnd;
-    // if(LEnd > token_location.end) LEnd = token_location.end;
-    // auto spc = std::string(token_location.column-1<=0? 0 : token_location.column-1, ' ');
-    // //log::Debug() << ":---> nbspace: " << spc.length() << ":";
-    // Str , '\n' , std::string(LBegin, LEnd+1) , '\n' , spc , lus::glyph::c_arrow_up;
-    return Str();
+
+    if (!token_location.end || !src) return "no source text";
+
+    // Scan backward:
+    auto line_begin = token_location.begin;
+    while ((line_begin > src) && (*line_begin != '\r') && (*line_begin != '\n')) --line_begin;
+    // Scan forward:
+
+    auto line_end = token_location.begin;
+
+    while (*line_end && (*line_end != '\r') && (*line_end != '\n') ) ++line_end;
+
+    lus::string Out = std::string(line_begin, line_end);
+    // @todo : Colorize all tokens on the same line here.
+    Out | '\n' | std::string(token_location.column,' ') | lus::glyph::arrow_up;
+    return Out();
 }
 
 

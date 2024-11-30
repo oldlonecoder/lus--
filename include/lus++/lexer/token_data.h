@@ -89,6 +89,6 @@ struct LUS_API lex_token
 
     [[nodiscard]] bool        has_type(lex::type::T ty) const { return sem & ty; }
     [[nodiscard]] std::string details(bool Frame = false) const;
-    std::string               mark(bool a_colorize = false) const;
+    std::string               mark(const char* src, bool a_colorize = false) const;
 };
 }

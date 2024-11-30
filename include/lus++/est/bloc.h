@@ -53,6 +53,7 @@ public:
     const variable::list& variables();
     variable* query_variable(lex_token* a_token);
     node*     append_instruction(node* _i_);
+    virtual const char* source_code(){ return "lus::est::bloc: re-implement in derived interpreter"; }
 
 };
 
