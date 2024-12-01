@@ -141,7 +141,7 @@ public:
     log::code end();
     log::code set_state(polling::state _state);
 
-    descriptor::config_data& add_descriptor();
+    descriptor::config_data& new_descriptor();
     log::code remove_descriptor(int _fd_id);
 
 };

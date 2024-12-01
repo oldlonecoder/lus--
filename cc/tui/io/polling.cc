@@ -202,7 +202,7 @@ log::action descriptor::poll_out()
  * @brief Create a new shared bare lus::io::descriptor object
  * @return the reference of the new descriptor config_data to be filled with its proper configs
  */
-descriptor::config_data& polling::add_descriptor()
+descriptor::config_data& polling::new_descriptor()
 {
     log::info() << " adding a new descriptor - the file handle integer will be set." << log::eol;
     _descriptors_.emplace_back(std::make_shared<descriptor>());

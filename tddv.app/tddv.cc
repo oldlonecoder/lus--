@@ -31,10 +31,8 @@ namespace lus
  * @param _d
  * @return action: continu, end, leave...- IDK yet...
  *
- * @note : To me-self : DO NOT RUN as long as this note is there.
- * &Agrave; moi-m&ecirc;me: Ne pas ex&eacute;cuter tant que cette note est ici pr&eacute;sente!
- * Je ne fais ici que jetter des id&eacute;es sur la logistique concernant l'interpretation des input events et une boucle pour la propagation de ces events...
- * I am only throwing ideas about logistical events interpreting and propagations.
+ * @note Need input stream analyses. Multiple input events can be queued, but it can also feel very laggy if I process them one after the other.
+ * ... Let's see...
  */
 log::action tddv::std_input_triggered(ui::io::descriptor& _d)
 {
@@ -77,7 +75,7 @@ log::code tddv::tddv_setup()
     //application::setup();
     log::debug() << log::eol;
     //...
-    _polling.add_descriptor() = {
+    _polling.new_descriptor() = {
         .poll_bits = POLLIN | POLLPRI | POLLHUP,
         .max_length = 1024,
         .fd = STDIN_FILENO

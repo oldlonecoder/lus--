@@ -36,7 +36,7 @@
 #include <sys/types.h>
 
 #include <stack>
-
+//#include <deque>
 
 namespace lus::ui
 {
@@ -268,7 +268,7 @@ struct  LUS_API event
         fileinputevent  fev;
     }data{};
     
-    using stream = std::stack<event>;
+    using events_q = std::vector<event>; //< I want to implement fixed length ( for speed ) circular events Q so std::vector is the one to choose over std::deque; std::dq; std::stack
 
     static constexpr u64 noevent                = 0x0000000000000000;
     static constexpr u64 mouse_left_down        = 0x0000000000000001;
@@ -302,9 +302,26 @@ struct  LUS_API event
     bool operator[](u64 event_code) const { return event_code & event_bits; }
 
 
+
 };
 
 
+class LUS_API events_stream final
+{
 
+    event::events_q _events_q{};
+
+public:
+    events_stream() = default;
+    events_stream(const std::string& _id);
+    ~events_stream();
+
+    log::code push(event&& _event) noexcept;
+    event& pop();
+
+
+
+
+};
 
 }
