@@ -230,13 +230,6 @@ struct LUS_API mouse
 struct  LUS_API event
 {
 
-    /*
-     * using queu = std::queue<event>;
-     * static log::code poll()
-     *
-     */
-
-
     static log::code get_stdin_event(event& _event_, timeval tv={0xffffffffff,0});
     static log::code init();
     static mouse mouse_data;
@@ -268,7 +261,7 @@ struct  LUS_API event
         fileinputevent  fev;
     }data{};
     
-    using events_q = std::vector<event>; //< I want to implement fixed length ( for speed ) circular events Q so std::vector is the one to choose over std::deque; std::dq; std::stack
+    using events_q = std::array<event,20>; //< I want to implement fixed length ( for speed ) circular events Q so std::vector is the one to choose over std::deque; std::dq; std::stack
 
     static constexpr u64 noevent                = 0x0000000000000000;
     static constexpr u64 mouse_left_down        = 0x0000000000000001;
@@ -311,13 +304,16 @@ class LUS_API events_stream final
 
     event::events_q _events_q{};
 
+    event::events_q::iterator _head_{}; ///< iterator on the actual event instance and index into the Q
+    event::events_q::iterator _tail_{}; ///< tail index on circular queue
+    std::string _id{"no name yet or none"};
 public:
     events_stream() = default;
     events_stream(const std::string& _id);
     ~events_stream();
 
     log::code push(event&& _event) noexcept;
-    event& pop();
+    log::code pop(event& _event);
 
 
 

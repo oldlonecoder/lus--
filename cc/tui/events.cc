@@ -253,15 +253,39 @@ event::operator bool()
 }
 
 
+events_stream::events_stream(const std::string& _id)
+{
+}
+
+
+events_stream::~events_stream(){ _id.clear(); } // ???
+
 /*!
  * @brief Put new event data into the queue.
  * @param _event
- * @return log::code::ok - systematicly
+ * @return log::code::ok - systematically
+ * @note if _tail_ has not been pop and _head_ pushes on it, then _tail_ gets overwritten and the old event held in _tail_ is lost.
  */
 log::code events_stream::push(event&& _event) noexcept
 {
-    _events_q.emplace_back(std::move(_event));
-    //...
-    return log::code::ok;
+    *_head_ = std::move(_event);
+    //if ()
+    ++_head_;
+    if (_head_ == _events_q.end()) _head_ = _events_q.begin();
+    return log::code::accepted;
 }
+
+
+log::code events_stream::pop(event& ev)
+{
+    if (_tail_== _head_) return log::code::empty;
+    ev = std::move(*_tail_);
+    ++_tail_;
+    if (_tail_ == _events_q.end())
+        _tail_ = _events_q.begin();
+
+    return log::code::accepted;
+}
+
+
 }// namespace lus::ui
