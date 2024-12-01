@@ -253,12 +253,12 @@ event::operator bool()
 }
 
 
-events_stream::events_stream(const std::string& _id)
+events_stream::events_stream(const std::string& _id): _id_(_id)
 {
 }
 
 
-events_stream::~events_stream(){ _id.clear(); } // ???
+events_stream::~events_stream(){ _id_.clear(); } // ???
 
 /*!
  * @brief Put new event data into the queue.

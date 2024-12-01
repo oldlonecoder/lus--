@@ -304,9 +304,9 @@ class LUS_API events_stream final
 
     event::events_q _events_q{};
 
-    event::events_q::iterator _head_{}; ///< iterator on the actual event instance and index into the Q
-    event::events_q::iterator _tail_{}; ///< tail index on circular queue
-    std::string _id{"no name yet or none"};
+    event::events_q::iterator _head_{_events_q.begin()}; ///< iterator on the actual event instance and index into the Q
+    event::events_q::iterator _tail_{_events_q.begin()}; ///< tail index on circular queue
+    std::string _id_{"no name yet or none"};
 public:
     events_stream() = default;
     events_stream(const std::string& _id);
@@ -314,9 +314,7 @@ public:
 
     log::code push(event&& _event) noexcept;
     log::code pop(event& _event);
-
-
-
+    event& operator*() const {return *_head_;}
 
 };
 

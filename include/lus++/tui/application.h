@@ -44,7 +44,7 @@ class LUS_API application
     std::string _app_name_{};
     static application* _app_;
 
-    event::stream _events_stack_{};
+    events_stream _events_q{"lus++ application global events queue"};
 
     terminal::screen* _terminal_screen_{nullptr};
 
@@ -52,6 +52,7 @@ public:
     application() = delete;
     virtual ~application();
     application(std::string app_name, int argc, char **argv);
+    //application(std::string app_name, int argc, char **argv, char** envp);
 
     virtual log::code run() = 0; //{ return log::code::notimplemented;}
     virtual log::code terminate();
