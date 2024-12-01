@@ -20,7 +20,7 @@ log::code ansi_parser::parse(event& ev)
 {
     cursor = stream.config().cursor;
     if (cursor == stream.end()) return log::code::eof;
-    log::debug() << "parsinf sequence: {" << color::lightsteelblue3 <<  lus::string::bytes(stream.buffer()) << color::reset << '}' << log::eol;
+    log::debug() << "parsing sequence: {" << color::lightsteelblue3 <<  lus::string::bytes(stream.buffer()) << color::reset << '}' << log::eol;
     if (*cursor == 0x1b)
     {
         if (stream.buffer().length()>1) return parse_ESC(ev);
@@ -55,7 +55,11 @@ log::code ansi_parser::parse(event& ev)
         next_byte();
         return log::code::ready;
     }
-    return log::code::rejected;
+    std::strncpy(ev.data.kev.ansi_seq, stream.buffer().c_str(), 19);
+    ev.event_type = event::type::CHARACTER;
+    ev.data.kev.code = static_cast<u8>(*cursor); // In this case the code member contains the ascii code of the character.
+
+    return log::code::ready;
 }
 
 
@@ -63,7 +67,7 @@ log::code ansi_parser::parse_ESC(event& ev)
 {
     // next character:
     next_byte();
-    log::debug() << " next byte: " << static_cast<int>(*cursor) << log::eol;
+    log::debug() << " next byte: " << color::aquamarine3 << std::format("{:02x}",static_cast<u8>(*cursor)) << log::eol;
     if (cursor == stream.end()) return log::code::eof;
 
     switch (*cursor)
@@ -72,6 +76,7 @@ log::code ansi_parser::parse_ESC(event& ev)
             log::debug() <<  static_cast<int>(*cursor) << log::code::notimplemented << log::eol;
             return log::code::notimplemented;// parse_dcs();
         case '[':
+            log::debug() << " calling parse_CSI: " << log::eol;
             return parse_csi(ev); ///@note Le focus est ici [ clefs de commandes et autres ], mouse...
         case ']':
             log::debug() <<  static_cast<int>(*cursor) << log::code::notimplemented << log::eol;
@@ -116,8 +121,8 @@ log::code ansi_parser::parse_csi(event& ev)
     std::vector<int> arguments;
     while (true) {
         if (!next_byte()) {
-            //log::write() << " End of the sequence ";
-            return  log::code::eof;
+            log::write() << " End of the sequence: switch to parse_ss1_2:" << log::eol;
+            return parse_ss1_2(ev);
         }
 
         if (*cursor == '<') {
@@ -146,7 +151,7 @@ log::code ansi_parser::parse_csi(event& ev)
         // To handle F1-F4, we exclude '['.
         if (*cursor >= '@' && *cursor <= '~' && *cursor != '<' && *cursor != '[')
         {
-            //log::write() << "CSI completed: last arg : '" << color::yellow << argument << color::reset << "' ";
+            log::write() << "CSI completed: last arg : '" << color::yellow << argument << color::reset << "' " << log::eol;
             arguments.push_back(argument);
             argument = 0;  // NOLINT
             int c=1;
@@ -159,7 +164,7 @@ log::code ansi_parser::parse_csi(event& ev)
                 case 'R':
                     return log::code::eof; //parse_caret_report(std::move(arguments));
                 default:
-                    log::write() << " Switching to parse_ss_1_2():";
+                    log::write() << " Switching to parse_ss_1_2():" << log::eol;
                     return parse_ss1_2(ev);
             }
         }
@@ -204,7 +209,7 @@ log::code ansi_parser::parse_ss1_2(event& ev)
     // 8 bytes max which include the beginning of the buffer (ESC;O | [)
 
     // Consume the buffer. key_event::ansi_seq is now the final location.
-    //log::debug() << log::fn::fun;
+    log::debug() << log::eol;
     //log::write() << "copy seq into event kev ansi_seq: ";
     std::strncpy(ev.data.kev.ansi_seq, stream.buffer().c_str(), 19);
 
