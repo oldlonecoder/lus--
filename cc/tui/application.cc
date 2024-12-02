@@ -134,13 +134,39 @@ log::code application::install_signals()
     return log::code::done;
 }
 
+
+/*!
+ *
+ * @return log::code result .
+ */
+log::code application::start_events_listening()
+{
+    _polling.new_descriptor() = {
+        .poll_bits = POLLIN | POLLPRI | POLLHUP,
+        .max_length = 1024,
+        .fd = STDIN_FILENO
+    };
+    auto d = _polling.descriptors().back();
+    d->init();
+    log::debug() << "link descriptor handle [" << d->config().fd << "] to tddv::std_input() delegate/slot/handler..." << log::eol;
+    d->pollin_action().connect(this, &application::std_infile_no);
+    d->activate();
+
+    // Blocking in this
+    return _polling.run();
+}
+
+
+
+
 log::code application::setup()
 {
     //...
     log::init();
     install_signals();
     terminal::begin();
-    //_current_screen_ = &terminal::screen::create("1");
+
+
     return log::code::done;
 }
 
@@ -165,26 +191,25 @@ log::code application::terminate()
 
 
 
-
-size_t application::push_event(event&& ev)
+log::action application::std_infile_no(ui::io::descriptor& _d)
 {
-    _events_stack_.push(ev);
-    return _events_stack_.size();
-}
-
-
-event  application::pop_event()
-{
-    if(_events_stack_.empty())
+    log::debug() << "tddv::std_input{" << lus::string::bytes(_d.buffer()) << "}" << log::eol;
+    auto r = ui::io::ansi_parser{_d}.parse(*_events_q);
+    log::debug() << " ansi_parser returned " << r << log::eol;
+    auto& ev = *_events_q;
+    if (ev[ui::event::command_key])
     {
-        log::error() << log::fn::func << log::code::empty << log::eol;
-        return {};
+        log::debug() << " ansi_parser key command" << log::eol;
+        if (ev.data.kev.code == ui::key_event::ESC) return log::action::end;
     }
+    log::debug() << " screen stuff:" << log::eol;
 
-    auto ev = _events_stack_.top();
-    _events_stack_.pop();
-    return ev;
+    return log::action::continu;
+
+
+    return log::action::dismiss;
 }
+
 
 
 }

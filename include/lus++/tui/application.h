@@ -25,7 +25,9 @@
 #include <memory>
 #include <lus++/tools/cadres.h>
 #include <lus++/tui/widgets/screen.h>
-
+#include <lus++/tui/io/polling.h>
+#include <lus++/tui/io/ansi_parser.h>
+#include <lus++/tui/io/ansi_colours_parser.h>
 
 namespace lus::ui
 {
@@ -45,6 +47,7 @@ class LUS_API application
     static application* _app_;
 
     events_stream _events_q{"lus++ application global events queue"};
+    io::polling _polling{"lus++ application io polling"};
 
     terminal::screen* _terminal_screen_{nullptr};
 
@@ -68,11 +71,10 @@ protected:
     log::code setup();
     virtual log::code setup_ui();
     virtual log::code install_signals();
+    virtual log::code start_events_listening();
 
-    virtual size_t push_event(event&& ev);
-    virtual event pop_event();
+    log::action std_infile_no(ui::io::descriptor& _d);
 
-    //terminal::desktop*  _current_screen_{nullptr};
 
 };
 

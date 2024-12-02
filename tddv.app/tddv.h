@@ -23,7 +23,7 @@
 //#include <lus++/tui/events.h>
 #include <lus++/tui/widgets/label.h>
 #include <lus++/tui/widgets/input_track.h>
-#include <lus++/tui/io/polling.h>
+
 
 namespace lus
 {
@@ -38,7 +38,7 @@ class tddv : public ui::application
     ui::window* _window{nullptr};
     ui::window* _window2{nullptr};
     ui::intrack* _intrack{nullptr};
-    ui::io::polling _polling{"std_inputs"};
+
 
 
     log::action std_input_triggered(ui::io::descriptor& _d);
