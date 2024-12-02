@@ -194,20 +194,23 @@ log::code application::terminate()
 log::action application::std_infile_no(ui::io::descriptor& _d)
 {
     log::debug() << "tddv::std_input{" << lus::string::bytes(_d.buffer()) << "}" << log::eol;
-    auto r = ui::io::ansi_parser{_d}.parse(*_events_q);
-    log::debug() << " ansi_parser returned " << r << log::eol;
-    auto& ev = *_events_q;
-    if (ev[ui::event::command_key])
+    auto r = ui::io::ansi_parser{_d}.parse(_events_q.push());
+    if (!r)
     {
-        log::debug() << " ansi_parser key command" << log::eol;
-        if (ev.data.kev.code == ui::key_event::ESC) return log::action::end;
+        log::error() << " ansi_parser returns" << r << " leaving and return to the stdin polling iteration..." << log::eol;
+        return log::action::continu;
     }
-    log::debug() << " screen stuff:" << log::eol;
 
-    return log::action::continu;
+    log::debug() << " ansi_parser returned: " << r << log::eol;
+    // auto& ev = *_events_q;
+    // if (ev[ui::event::command_key])
+    // {
+    //     log::debug() << " ansi_parser key command" << log::eol;
+    //     if (ev.data.kev.code == ui::key_event::ESC) return log::action::end;
+    // }
+    // log::debug() << " screen stuff:" << log::eol;
 
-
-    return log::action::dismiss;
+    return log::action::commit;
 }
 
 

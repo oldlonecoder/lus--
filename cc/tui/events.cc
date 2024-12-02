@@ -260,26 +260,18 @@ events_stream::events_stream(const std::string& _id): _id_(_id)
 
 events_stream::~events_stream(){ _id_.clear(); } // ???
 
-/*!
- * @brief Put new event data into the queue.
- * @param _event
- * @return log::code::ok - systematically
- * @note if _tail_ has not been pop and _head_ pushes on it, then _tail_ gets overwritten and the old event held in _tail_ is lost.
- */
-log::code events_stream::push(event&& _event) noexcept
+event& events_stream::push()
 {
-    *_head_ = std::move(_event);
-    //if ()
     ++_head_;
-    if (_head_ == _events_q.end()) _head_ = _events_q.begin();
-    return log::code::accepted;
+    if(_head_ == _events_q.end()) _head_ = _events_q.begin();
+    return *_head_;
 }
 
 
-log::code events_stream::pop(event& ev)
+log::code events_stream::read(event& ev)
 {
     if (_tail_== _head_) return log::code::empty;
-    ev = std::move(*_tail_);
+    ev = *_tail_;
     ++_tail_;
     if (_tail_ == _events_q.end())
         _tail_ = _events_q.begin();

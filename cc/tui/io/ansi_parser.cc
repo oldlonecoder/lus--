@@ -222,7 +222,7 @@ log::code ansi_parser::parse_ss1_2(event& ev)
     code = (code << 8) | _b_;
     _b_ = ev.data.kev.ansi_seq[1]; // no matter '[' or 'O' :
     code = (code << 8) | _b_;
-    // Now push the rest towards ln or until  hit or miss:
+    // Now assign the rest towards ln or until  hit or miss:
     for(int x=2;x < ln; x++)
     {
         _b_ = ev.data.kev.ansi_seq[x];
