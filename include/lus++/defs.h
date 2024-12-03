@@ -52,30 +52,6 @@
 
 
 
-namespace integers
-{
-using Byte  = uint8_t;
-using I8    = int8_t;
-using U8    = uint8_t;
-using I16   = int16_t;
-using U16   = uint16_t;
-using I32   = int32_t;
-using U32   = uint32_t;
-using I64   = int64_t;
-using U64   = uint64_t;
-using UReg  = uint64_t;
-
-using byte  = uint8_t;
-using i8    = int8_t;
-using u8    = uint8_t;
-using i16   = int16_t;
-using u16   = uint16_t;
-using i32   = int32_t;
-using u32   = uint32_t;
-using i64   = int64_t;
-using u64   = uint64_t;
-using u_reg  = uint64_t;
-}
 
 
  //--  virtual class names macros : --
@@ -114,3 +90,119 @@ private:
 
 
 //----------------------------------------------------------------------------
+
+namespace lus::definitions
+{
+namespace integers
+{
+using Byte  = uint8_t;
+using I8    = int8_t;
+using U8    = uint8_t;
+using I16   = int16_t;
+using U16   = uint16_t;
+using I32   = int32_t;
+using U32   = uint32_t;
+using I64   = int64_t;
+using U64   = uint64_t;
+using UReg  = uint64_t;
+
+using byte  = uint8_t;
+using i8    = int8_t;
+using u8    = uint8_t;
+using i16   = int16_t;
+using u16   = uint16_t;
+using i32   = int32_t;
+using u32   = uint32_t;
+using i64   = int64_t;
+using u64   = uint64_t;
+using u_reg  = uint64_t;
+}
+
+namespace rem
+{
+
+enum class type : integers::U8{
+    none, err, warning, fatal, except, message, output, debug, info, comment, syntax, status, test, interrupted, aborted, segfault, log
+};
+
+    enum class code : integers::U8
+    {
+        ok  =0           , ///< Obviously;
+        accepted         ,
+        success          ,
+        rejected         ,
+        failed           ,
+        empty            ,
+        full             ,
+        notempty         ,
+        implemented      , ///< Like notimplemented or already implemented
+        notimplemented   , ///< "Please, implement"
+        untested         ,
+        eof              , ///< End of file
+        eos              , ///< End of stream or string or statement or Status ( machine Status )
+        null_ptr         , ///< It will happen. Trust me :)
+        notexist         , ///< does not exist
+        exist            , ///< does already exist
+        unexpected       , ///< unexpected
+        expected         , ///< expected
+        blocked          , ///< thread trying To lock A mutex has failed because the mutex is already locked IsIn another thread...
+        locked           , ///< thread trying To lock A mutex has become the owner of the lock.
+        overflow         , ///< buffer overflow
+        oob              , ///< buffer overflow
+        reimplement      ,
+        done             ,
+        complete         ,
+        finish           ,
+        undefined        ,
+        ready            ,
+        terminate        ,
+        timeout          ,
+        divbyzero        ,
+        notvisible       ,
+        cancel           ,
+        object_ptr       ,
+        object_id        ,
+
+        //...
+
+    };
+
+
+    enum class fn : integers::U8
+    {
+        func             ,
+        endl             , ///< End of line Code, input format
+        file             ,
+        line             ,
+        stamp            , ///< fully detailed timestamp
+        hour             ,
+        minute           ,
+        seconds          ,
+        weekday          ,
+        dayname          ,
+        month            , ///< Par defaut month name
+        day              ,
+        monthnum         , ///< Maintenant explicite
+        year
+    };
+
+    enum class action : integers::U8
+    {
+        enter            , ///< enter bloc or indent
+        leave            , ///< End (logger: End of entry accumulators, so do commit); End of (sel)Section, Attribute ( auto-color::reset ) and unindent
+        commit           , ///< Commit...
+        begin            , ///< Begin (sel)Section or augment indent level
+        end              , ///< End   Loop/Action or End selection or Unindent one level; or end inputs on the current logentry then flush to file.
+        continu          , ///< Continue Loop or continue Signals::Action iteration.
+        dismiss          , ///< The current action or iteration has been dismissed : break loop or actual action.
+    };
+
+
+
+}
+
+
+}
+
+
+using namespace lus::definitions;
