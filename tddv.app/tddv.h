@@ -40,10 +40,6 @@ class tddv : public ui::application
     ui::intrack* _intrack{nullptr};
 
 
-
-    log::action std_input_triggered(ui::io::descriptor& _d);
-
-
 public:
 
     ~tddv()override;

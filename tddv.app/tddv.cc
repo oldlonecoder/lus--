@@ -26,35 +26,6 @@
 
 namespace lus
 {
-/*!
- * std inputs triggered this Receiver then pass the descritor's ref to the ainsi parser.
- * @param _d
- * @return action: continu, end, leave...- IDK yet...
- *
- * @note Need input stream analyses. Multiple input events can be queued, but it can also feel very laggy if I process them one after the other.
- * ... Let's see...
- */
-log::action tddv::std_input_triggered(ui::io::descriptor& _d)
-{
-    log::debug() << "tddv::std_input{" << lus::string::bytes(_d.buffer()) << "}" << log::eol;
-    ui::event ev{};
-    auto r = ui::io::ansi_parser{_d}.parse(ev);
-    log::debug() << " ansi_parser returned " << r << log::eol;
-    if (ev[ui::event::command_key])
-    {
-        log::debug() << " ansi_parser key command" << log::eol;
-        if (ev.data.kev.code == ui::key_event::ESC) return log::action::end;
-    }
-    log::debug() << " screen stuff:" << log::eol;
-    // application::screen()->statusbar()->input_stats()->update_event_data(ev);
-    // application::screen()->statusbar()->update();
-    _intrack->update_event_data(ev);
-    _test_widget_->update();
-        // tests:
-    application::screen()->update();
-    _d.reset();
-    return log::action::continu;
-}
 
 
 tddv::~tddv() = default;
@@ -75,24 +46,15 @@ log::code tddv::tddv_setup()
     //application::setup();
     log::debug() << log::eol;
     //...
-    _polling.new_descriptor() = {
-        .poll_bits = POLLIN | POLLPRI | POLLHUP,
-        .max_length = 1024,
-        .fd = STDIN_FILENO
-    };
-    auto d = _polling.descriptors().back();
-    d->init();
-    log::debug() << "link descriptor handle [" << d->config().fd << "] to tddv::std_input() delegate/slot/handler..." << log::eol;
-    d->pollin_action().connect(this, &tddv::std_input_triggered);
-    d->activate();
 
+    //...
     return setup_ui();
 }
 
 
 /*!
- * 
- * @return 
+ * @brief Actual "application" :: setup/_ui is a mess because I need to tdd(v : valgrind) it so the structure is not ...structured right now.
+ * @return lus::log::code::accepted...
  */
 log::code tddv::setup_ui()
 {
