@@ -118,7 +118,7 @@ using u64   = uint64_t;
 using u_reg  = uint64_t;
 }
 
-namespace rem
+namespace rem  // Remark
 {
 
 enum class type : integers::U8{
