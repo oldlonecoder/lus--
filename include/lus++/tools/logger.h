@@ -312,7 +312,9 @@ public:
 
     log() = default;
     log(log::type message, log::code code, std::source_location src);
+    log::type entry_type() const { return _type_; }
 };
+
 
  bool operator !(log::code enum_code);
 }

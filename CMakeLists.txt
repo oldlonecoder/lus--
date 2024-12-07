@@ -53,9 +53,8 @@ add_library("${Target}" STATIC
             include/${Target}++/tui/io/ansi_parser.h cc/tui/io/ansi_parser.cc
             include/${Target}++/tui/io/polling.h cc/tui/io/polling.cc
             include/${Target}++/tui/tuxns.h cc/tui/tuxns.cc
-            cc/definitions.implementation.cc
-            include/lus++/definitions.implementation.h
-
+            include/lus++/definitions.implementation.h  cc/definitions.implementation.cc
+            include/lus++/tools/expect.h
 )
 
 

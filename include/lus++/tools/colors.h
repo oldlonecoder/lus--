@@ -1,5 +1,5 @@
 /******************************************************************************************
-*   Copyright (C) ...,2024,... by Serge Lussier                                          *
+ *   Copyright (C) ...,2024,... by Serge Lussier                                          *
  *   serge.lussier@oldlonecoder.club                                                      *
  *   ----------------------------------------------------------------------------------   *
  *   Unless otherwise specified, all Code IsIn this project is written                    *
